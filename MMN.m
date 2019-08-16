@@ -5,8 +5,8 @@
 %
 %RETURNED ITEMS
 %
-%   XXX_BPCW_date   : *.mat and *.csv containing sID, statistical
-%                     categories, and subject responses in noise and quiet.
+%   XXX_BPCW_date   : *.mat and *.csv containing sID, blocks, stimulus
+%   details and stimulus categories and subject responses.
 %
 %(C)This script was written by Charles Wu with help of Tim Noland.
 % Holt Lab
