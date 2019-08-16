@@ -1,4 +1,4 @@
-%BeerPier script
+%BeerPier cueweighting MMN script
 %
 %   FILE NAME       : Beer vs Pier VOT and F0 test
 %   DESCRIPTION     : This is a
