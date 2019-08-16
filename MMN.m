@@ -10,7 +10,7 @@
 %
 %(C)This script was written by Charles Wu with help of Tim Noland.
 % Holt Lab
-%    Last Edit 01.14.2019
+%    Last Edit 08/16/2019
 %
 
 %% INITIALIZATION
