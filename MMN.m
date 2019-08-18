@@ -52,7 +52,6 @@ fprintf('Loading sound files. This may take a moment...')
 load('BPmaster_baseline.mat');
 A = load('BPmaster_canonical.mat');
 load('BPmaster_reverse.mat');
-load('BPmaster_test.mat');
 load('BPresp.mat');
 fprintf('Done.\n')
 
@@ -355,20 +354,24 @@ for i=1:blockNumber %%change the block number
     %%%opposite
     %%%we do this by loading different scripts depending on the block
     %%%number
-    
+    %%Now counterbalance the standard/deviant stimuli
     if (mod(i, 2) ~= 0) %%load different
-        BPCWmaster_test = load()
-        v = [1,1,1,2];
-        last = [1,1,2];
-        standard = BPCWmaster_test.Stimuli{1,8};
+        BPCWmaster_test = load('BPmaster_test_v1.mat'); %%load version 1
+        %%the block number is odd
     else
-        v = [1,2,2,2];
-        last = [1,2,2];
-        standard = BPCWmaster_test.Stimuli{2,8}; 
+        BPCWmaster_test = load('BPmaster_test_v2.mat');%%%load version 2 when 
+        %%the block number is even 
     end
+    %%use v and last to index the stimulus positions in a sequence
+    v = [1,1,1,2];
+    last = [1,1,2];
+    standard = BPCWmaster_test.Stimuli{1,8}; %%standard stimulus is alwas
+    %%the first one in the file
     
     %%start 'building' our speech sequence and store in vector 'build'
     %%and store the trigger vector in 'trigger_build'
+    %%here we break the sequence of 20 stims into 6 chunks
+    %%hence, b = 1:6
     build = [];
     trigger_build = [];
     for b = 1:6
@@ -382,22 +385,27 @@ for i=1:blockNumber %%change the block number
             Block = [zeros(ISI,1);standard;...
                      zeros(ISI,1);standard;...
                      zeros(ISI,1);standard];
-            %%%MMN test1: 221
-            %%%MMN test2: 222
+            %%%EEG trigger for standard: 51
             trig = zeros(length(standard),1);
             trig(find(standard>.005,1):(find(standard>.005,1)+trig_len-1))...
-            = trignum2scalar(????)*ones(trig_len,1);
+            = trignum2scalar(51)*ones(trig_len,1);
         
             trig_Block = [zeros(ISI,1);trig;...
-             zeros(ISI,1);trig;...
-             zeros(ISI,1);trig];
+            zeros(ISI,1);trig;...
+            zeros(ISI,1);trig];
         %%%%THE TRIGGER NUMBER BELOW IS A LITTLE TRICKY
         %%%%THINK OF A GOOD WAY TO DEAL WITH THIS
         elseif (mod(b, 2) == 0) && (b<6) %% randomize standard+deviant blocks in <6 even numbers
             s1 = BPCWmaster_test.Stimuli{pos(1),7}; s2 = BPCWmaster_test.Stimuli{pos(2),7};
             s3 = BPCWmaster_test.Stimuli{pos(3),7}; s4 = BPCWmaster_test.Stimuli{pos(4),7};
             
+            %%%EEG trigger for standard is always 51
+            %%%and for deviant is always 52
+            %%%but because we are randomizing here so we don't know which
+            %%%is which so we need t1:t4 to index it.
             t1 = 50+pos(1); t2 = 50+pos(2); t3 = 50+pos(3); t4 = 50+pos(4);
+            fprintf('\nThe trigger numbers are \n t1=%.1f\nt2=%.1f\nt3=%.1f\nt4=%.1f\n',...
+                    t1, t2, t3, t4);
             Block = [zeros(ISI,1); s1;...
                      zeros(ISI,1); s2;...
                      zeros(ISI,1); s3;...
@@ -451,6 +459,8 @@ for i=1:blockNumber %%change the block number
             trig_Block = [zeros(ISI,1);trig1;...
             zeros(ISI,1);trig2;...
             zeros(ISI,1);trig3];
+            fprintf('\nThe trigger numbers are \n t1=%.1f\nt2=%.1f\nt3=%.1f\n',...
+                    t1, t2, t3);
         end
 
         build = [build; Block];
