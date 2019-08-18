@@ -81,7 +81,7 @@ enabledkeys = RestrictKeysForKbCheck(responseKeyIdx);
 
 
 %% STIMULUS PRESENTATION FOR BASELINE BLOCKS DURING EEG CAPING
-curText = '<color=ffffff>In this experiment, you will hear either the word'...
+curText = ['<color=ffffff>In this experiment, you will hear either the word'...
     '<color=ffff00><b>"Beer"<b> <color=ffffff>or the word <color=ffff00><b>"Pier.'...
     '"<b> <color=ffffff>\n\n'...
     'If you hear "beer," click the box labelled "beer."\nIf you hear "pier,"'...
@@ -90,7 +90,7 @@ curText = '<color=ffffff>In this experiment, you will hear either the word'...
     'This is the first part of the experiment while the experimenter'...
     'is putting electrodes on your head'...
     'There is only one block in this part'...
-    '<b>Press "spacebar" to begin.<b>';
+    '<b>Press "spacebar" to begin.<b>'];
 %curText = 'In this experiment, you will hear either the word "BEER" or the word "PIER" \n\n\n\n If you hear "BEER", click the box labelled "BEER". \n\n If you hear "PIER" click the box labelled "PIER". \n\n If you are unsure, make your best guess.\n\n\n\n Every once in a while, you can take a break \n\n and we will show you a short cartoon with the same sounds in the background. \n\n You just need to watch the cartoon and relax and ignore the sounds. \n\n\n\n Press SPACEBAR to begin';
 DrawFormattedText2(curText,'win',win,'sx',100,'sy',400,'xalign','left','yalign','top','wrapat',59);
 %DrawFormattedText(win, curText, 'center', 'center', white);
@@ -181,12 +181,12 @@ Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 responseKeyIdx = KbName('space');
 enabledkeys = RestrictKeysForKbCheck(responseKeyIdx);
 
-curText = '<color=ffffff>Now we are ready to start the second part.'...
+curText = ['<color=ffffff>Now we are ready to start the second part.'...
     'You will be doing the same thing as what you did in the first part.'...
     'There will be 26 blocks. At the end of each block, you will watch a'...
     'short video to take a break.\n\n You will hear the same sounds'...
     'embedded in the videos but you don ignore the sounds embedded'...
-    'in the video\n\n<b>Press "spacebar" to begin.<b>';
+    'in the video\n\n<b>Press "spacebar" to begin.<b>'];
 DrawFormattedText2(curText,'win',win,'sx',100,'sy',400,'xalign','left','yalign','top','wrapat',59);
 %DrawFormattedText(win, curText, 'center', 'center', white);
 Screen('Flip',win);
@@ -346,21 +346,6 @@ for i=1:blockNumber %%change the block number
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 %%%%%%%%%UNDONE!!!! 
     %%%first create 1s silent period
@@ -372,6 +357,7 @@ for i=1:blockNumber %%change the block number
     %%%number
     
     if (mod(i, 2) ~= 0) %%load different
+        BPCWmaster_test = load()
         v = [1,1,1,2];
         last = [1,1,2];
         standard = BPCWmaster_test.Stimuli{1,8};
