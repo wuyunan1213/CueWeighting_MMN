@@ -13,6 +13,11 @@
 %    Last Edit 08/16/2019
 %
 
+%%to do:
+%%1.get the modified stim for the full 7*7 grid
+%%2.change the test stimuli to be F0 test stim instead of VOT
+%%3.create two versions of the test stimuli
+%%4.change the baselineTN numnber
 %% INITIALIZATION
 close all;
 clear all; %#ok<CLALL>
@@ -23,37 +28,37 @@ cd('C:\Users\Lab User\Desktop\Experiments\Charles\EEG')
 fprintf('Beginning BP behavioral pilot protocol.\n\n')
 
 % Step One: Connect to and properly initialize RME sound card
-fprintf('Entablishing connection to sound card...\n')
-
-Devices=PsychPortAudio('GetDevices');
+fprintf('Initializing connection to sound card...\n')
+Devices=playrec('getDevices');
 if isempty(Devices)
-    error ('There are no devices available using the selected host APIs.');
+    error(sprintf('There are no devices available using the selected host APIs.\nPlease make sure the RME is powered on!')); %#ok<SPERR>
 else
-    q=1;
-    while ~strcmp(Devices(q).DeviceName,'ASIO MADIface USB') && q <= length(Devices)
-        q=q+1;
+    i=1;
+    while ~strcmp(Devices(i).name,'ASIO MADIface USB') && i <= length(Devices)
+        i=i+1;
     end
 end
-
-fs = Devices(q).DefaultSampleRate;
-fprintf('\nDefault sampling rate is %.1f\n', fs)
-
-playDev = Devices(q).DeviceIndex;
-stimchanList = [1,2,14];
-pamaster = PsychPortAudio('Open',playDev,1,4,fs,3,[],[],[12,13,14]);
+fs = Devices(i).defaultSampleRate;
+playDev = Devices(i).deviceID;
+playrec('init',fs,playDev,-1,14,-1);
+fprintf('Success! Connected to %s.\n', Devices(i).name);
+stimchanList=[1,2,14];
 
 % Step Two: Yippee, we're online. Now, we establish the subject's ID number
 % and load in Master List and Response templates.
 fprintf('\nPlease follow the prompt in the pop-up window.\n\n')
 
-subj = '007'; %char(inputdlg('Please enter the subject ID number:','Subject ID'));
+subj = char(inputdlg('Please enter the subject ID number:','Subject ID'));
 
 fprintf('Loading sound files. This may take a moment...')
 load('BPmaster_baseline.mat');
-A = load('BPmaster_canonical.mat');
+load('BPmaster_canonical.mat');
 load('BPmaster_reverse.mat');
 load('BPresp.mat');
 fprintf('Done.\n')
+%%column names of the stimfiles: 
+%%1.sound file 2. VOT value 3. F0 value 4. VOT level 5. F0 level. 6. block
+%%7.stimulus type 8. audio
 
 %Step Three: Launch PsychToolbox; display instructions
 screens = Screen('Screens');
@@ -95,6 +100,10 @@ DrawFormattedText2(curText,'win',win,'sx',100,'sy',400,'xalign','left','yalign',
 Screen('Flip',win);
 oldtype = ShowCursor(0);
 KbWait([],2);
+
+
+baselineTN = 0 %%CHANGE LATER!!
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -138,7 +147,6 @@ for i=1:blockNumber %%change the block number
         %%%%CHANGE THIS WHOLE CHUNK BASED ON THE NEW STIMULI SHEET
         %Play sound...include noise or not
         repIndex = baselineTN+(i-1)*trialNumber+j;
-        
         if i <= blockNumber/2 %%present the canonical blocks first
             stim=BPCWmaster_can.Stimuli(presentation(i,j),1:8);
             %%%canonical exposure category 'b':111
@@ -152,19 +160,19 @@ for i=1:blockNumber %%change the block number
             %%%reverse test2: 222
             %%%separate the 4 different trigger conditions:
             trig = zeros(length(stim{8}),1);
-            if (stim{7} == 'exposure' && stim{2} < 15)
+            if (strcmp(stim{7}, 'exposure') && stim{2} < 15)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(111)*ones(trig_len,1);
             
-            elseif (stim{7} == 'exposure' && stim{2} > 15)
+            elseif (strcmp(stim{7}, 'exposure') && stim{2} > 15)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(112)*ones(trig_len,1);
             
-            elseif (stim{7} == 'test' && stim{2} < 15)
+            elseif (strcmp(stim{7}, 'test') && stim{2} < 15)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(121)*ones(trig_len,1);
             
-            elseif (stim{7} == 'test' && stim{2} > 15)
+            elseif (strcmp(stim{7}, 'test') && stim{2} > 15)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(122)*ones(trig_len,1);
             end
@@ -172,22 +180,22 @@ for i=1:blockNumber %%change the block number
             BPCWresp(repIndex,1:7)=stim(1:7);%%%fill the stim info
             
         else %%%%then the reverse blocks
-            stim=BPCWmaster_rev.Stimuli{presentation(i,j),7};
+            stim=BPCWmaster_rev.Stimuli(presentation(i,j),1:8);
             trig = zeros(length(stim{8}),1);
             %%4 different trigger conditions
-            if (stim{7} == 'exposure' && stim{2} < 15)
+            if (strcmp(stim{7}, 'exposure') && stim{2} < 15)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(211)*ones(trig_len,1);
             
-            elseif (stim{7} == 'exposure' && stim{2} > 15)
+            elseif (strcmp(stim{7}, 'exposure') && stim{2} > 15)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(212)*ones(trig_len,1);
             
-            elseif (stim{7} == 'test' && stim{2} < 15)
+            elseif (strcmp(stim{7}, 'test')  && stim{2} < 15)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(221)*ones(trig_len,1);
             
-            elseif (stim{7} == 'test' && stim{2} > 15)
+            elseif (strcmp(stim{7}, 'test') && stim{2} > 15)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(222)*ones(trig_len,1);
             end
@@ -197,11 +205,13 @@ for i=1:blockNumber %%change the block number
         end
        
         %%%concatenate all 3 channels of signals
-        signalthree=[stim{8},stim{8},trig]';
+        signalthree=[stim{8},stim{8},trig];
         
-        PsychPortAudio('FillBuffer', pamaster, signalthree);
-        t1 = PsychPortAudio('Start', pamaster, 1, 0, 1);
-        PsychPortAudio('Stop', pamaster , 1, 1);
+        pageno = playrec('play',signalthree,stimchanList);
+        playrec('block',pageno);
+%         PsychPortAudio('FillBuffer', pamaster, signalthree);
+%         t1 = PsychPortAudio('Start', pamaster, 1, 0, 1);
+%         PsychPortAudio('Stop', pamaster , 1, 1);
 
         %get user response
         [clicks,x,y,whichButton]=GetClicks(win,0);
@@ -270,7 +280,7 @@ for i=1:blockNumber %%change the block number
     %%use v and last to index the stimulus positions in a sequence
     v = [1,1,1,2];
     last = [1,1,2];
-    standard = BPCWmaster_test.Stimuli{1,8}; %%standard stimulus is alwas
+    standard = BPCWmaster_test.BPCWmaster_test.Stimuli{1,8}; %%standard stimulus is alwas
     %%the first one in the file
     
     %%start 'building' our speech sequence and store in vector 'build'
@@ -301,8 +311,8 @@ for i=1:blockNumber %%change the block number
         %%%%THE TRIGGER NUMBER BELOW IS A LITTLE TRICKY
         %%%%THINK OF A GOOD WAY TO DEAL WITH THIS
         elseif (mod(b, 2) == 0) && (b<6) %% randomize standard+deviant blocks in <6 even numbers
-            s1 = BPCWmaster_test.Stimuli{pos(1),7}; s2 = BPCWmaster_test.Stimuli{pos(2),7};
-            s3 = BPCWmaster_test.Stimuli{pos(3),7}; s4 = BPCWmaster_test.Stimuli{pos(4),7};
+            s1 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos(1),8}; s2 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos(2),8};
+            s3 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos(3),8}; s4 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos(4),8};
             
             %%%EEG trigger for standard is always 51
             %%%and for deviant is always 52
@@ -339,9 +349,9 @@ for i=1:blockNumber %%change the block number
          
 
         elseif (b==6) %%randomize the last block
-            s1 = BPCWmaster_test.Stimuli{pos_end(1),7};
-            s2 = BPCWmaster_test.Stimuli{pos_end(2),7};
-            s3 = BPCWmaster_test.Stimuli{pos_end(3),7};
+            s1 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos_end(1),8};
+            s2 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos_end(2),8};
+            s3 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos_end(3),8};
             
             Block = [zeros(ISI,1); s1;...
                      zeros(ISI,1); s2;...
@@ -386,11 +396,14 @@ for i=1:blockNumber %%change the block number
 
     % Start playback engine:
     Screen('PlayMovie', movie, 1);
-    rect1=SetRect(400,400,1000,900);
+    rect1=SetRect(400,100,1600,1100);
 
-    signalthree=[signal,signal, trigger_MMN]';
-    PsychPortAudio('FillBuffer', pamaster, signalthree);
-    t1 = PsychPortAudio('Start', pamaster, 1, 0, 0);
+    signalthree=[signal,signal, trigger_MMN];
+    
+    pageno = playrec('play',signalthree,stimchanList);
+    
+%     PsychPortAudio('FillBuffer', pamaster, signalthree);
+%     t1 = PsychPortAudio('Start', pamaster, 1, 0, 0);
 
     % Playback loop: Runs until end of movie or ke   ypress:
     while(1)
@@ -413,7 +426,8 @@ for i=1:blockNumber %%change the block number
         Screen('Close', tex);
     end
 
-    PsychPortAudio('Stop', pamaster , 1, 1);
+    playrec('delPage',pageno);
+    %PsychPortAudio('Stop', pamaster , 1, 1);
 
 
     % Stop playback:
@@ -438,10 +452,11 @@ sIDcell=cell(length(BPCWresp),1);
 sIDcell(:)={subj};
 BPCWresp=cell2table([sIDcell,BPCWresp]);
 fnamecsv = ['C:\Users\Lab User\Desktop\Experiments\Charles\EEG\Results\' subj '_BP_' datestr(datetime('now'),'yyyymmdd') '.csv'];
-BPCWresp.Properties.VariableNames={'sID','Sound','VOT','F0','VOTlevel','F0level','StimulusType','Response'};
+BPCWresp.Properties.VariableNames={'sID','Sound','VOT','F0','VOTlevel','F0level','Block','StimulusType','Response'};
 writetable(BPCWresp,fnamecsv);
 
 % Disconnect RME
 fprintf('Disconnecting PsychPortAudio...\n')
-PsychPortAudio('Close')
+playrec('reset');
+%PsychPortAudio('Close')
 fprintf('PsychPortAudio successfully disconnected. Goodbye!\n')
