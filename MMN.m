@@ -42,7 +42,7 @@ fs = Devices(i).defaultSampleRate;
 playDev = Devices(i).deviceID;
 playrec('init',fs,playDev,-1,14,-1);
 fprintf('Success! Connected to %s.\n', Devices(i).name);
-stimchanList=[1,2,14];
+stimchanList=[1,2];
 
 % Step Two: Yippee, we're online. Now, we establish the subject's ID number
 % and load in Master List and Response templates.
@@ -89,6 +89,116 @@ Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 responseKeyIdx = KbName('space');
 enabledkeys = RestrictKeysForKbCheck(responseKeyIdx);
 
+%% STIMULUS PRESENTATION FOR BASELINE BLOCKS DURING EEG CAPING
+curText = ['<color=ffffff>In this experiment, you will hear either the word'...
+    '<color=ffff00><b>"Beer"<b> <color=ffffff>or the word <color=ffff00><b>"Pier.'...
+    '"<b> <color=ffffff>\n\n'...
+    'If you hear "beer," click the box labelled "beer."\nIf you hear "pier,"'...
+    'click the box labelled "pier."\n\nIf you are unsure, '...
+    'make your best guess.\n\n'...
+    'This is the first part of the experiment while the experimenter'...
+    'is putting electrodes on your head'...
+    'There is only one block in this part'...
+    '<b>Press "spacebar" to begin.<b>'];
+%curText = 'In this experiment, you will hear either the word "BEER" or the word "PIER" \n\n\n\n If you hear "BEER", click the box labelled "BEER". \n\n If you hear "PIER" click the box labelled "PIER". \n\n If you are unsure, make your best guess.\n\n\n\n Every once in a while, you can take a break \n\n and we will show you a short cartoon with the same sounds in the background. \n\n You just need to watch the cartoon and relax and ignore the sounds. \n\n\n\n Press SPACEBAR to begin';
+DrawFormattedText2(curText,'win',win,'sx',100,'sy',400,'xalign','left','yalign','top','wrapat',59);
+%DrawFormattedText(win, curText, 'center', 'center', white);
+Screen('Flip',win);
+oldtype = ShowCursor(0);
+KbWait([],2);
+
+repNumber = 1; %%the baseline block should be repeated 4 times
+baselineTN = 25*repNumber;
+
+presentation = [];
+for i = 1:repNumber
+    A = randperm(25);
+    presentation=[presentation, A];
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BASELINE BLOCKS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for j=1:baselineTN %change the trial number
+    %Flip Screen to be Beer Pier blocks
+    [scrX,scrY] = RectCenter(winRect);
+    rect1 = CenterRectOnPoint([0 0 500 500],scrX-325,scrY);
+    rect2 = CenterRectOnPoint([0 0 500 500],scrX+325,scrY);   
+    Screen('FillRect', win, [135 206 250], rect1);
+    Screen('FillRect', win, [135 206 250], rect2);
+    curText='Beer                                                     Pier';
+    DrawFormattedText(win,curText,'center','center',[0 0 0]);
+    Screen('Flip',win);
+
+    signal=BPCWmaster_baseline.Stimuli{presentation(j),8};
+
+    BPCWresp(j,1:7)=BPCWmaster_baseline.Stimuli(presentation(j),1:7);
+
+    signaltwo=[signal,signal];
+
+    pageno = playrec('play',signaltwo,stimchanList);
+    playrec('block',pageno);
+    %PsychPortAudio('FillBuffer', pamaster, signaltwo);
+    %t1 = PsychPortAudio('Start', pamaster, 1, 0, 1);
+    %PsychPortAudio('Stop', pamaster , 1, 1);
+
+    %get user response
+    [clicks,x,y,whichButton]=GetClicks(win,0);
+    while ~((((x>=scrX-575)&&(x<=scrX-75))&&((y>=scrY-250)&&(y<=scrY+250)))||(((x>=scrX+75)&&(x<=scrX+575))&&((y>=scrY-250)&&(y<=scrY+250))))
+        [clicks,x,y,whichButton]=GetClicks(win,0);
+    end
+    %record user response (in correct location)
+    if (((x>=scrX-575)&&(x<=scrX-75))&&((y>=scrY-250)&&(y<=scrY+250))) %clicked "beer"
+        BPCWresp{j,8}='beer'; 
+        %LOOK LATER
+
+        %Flip Screen to be Beer Pier blocks
+        [scrX,scrY] = RectCenter(winRect);
+        rect1 = CenterRectOnPoint([0 0 500 500],scrX-325,scrY);
+        rect2 = CenterRectOnPoint([0 0 500 500],scrX+325,scrY);
+        Screen('FillRect', win, [255 255 204], rect1);
+        Screen('FillRect', win, [135 206 250], rect2);
+        curText='Beer                                                     Pier';
+        DrawFormattedText(win,curText,'center','center',[0 0 0]);
+        Screen('Flip',win);
+
+        WaitSecs(1);
+
+    else %clicked "pier"
+        BPCWresp{j,8}='pier';
+        %LOOK LATER
+
+        %Flip Screen to be Beer Pier blocks
+        [scrX,scrY] = RectCenter(winRect);
+        rect1 = CenterRectOnPoint([0 0 500 500],scrX-325,scrY);
+        rect2 = CenterRectOnPoint([0 0 500 500],scrX+325,scrY);
+        Screen('FillRect', win, [135 206 250], rect1);
+        Screen('FillRect', win, [255 255 204], rect2);
+        curText='Beer                                                     Pier';
+        DrawFormattedText(win,curText,'center','center',[0 0 0]);
+        Screen('Flip',win);
+
+        WaitSecs(1);
+    end
+end
+
+
+stimchanList=[1,2,14];%%%change the stimulus channels to 
+%%3 because we are adding an EEG trigger channnel here
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%% STIMULUS PRESENTATION FOR CANONICAL AND REVERSE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Step Five: Play the canonical and reverse blocks with the MMN block at the
+%end
+
 curText = ['<color=ffffff>Now we are ready to start the second part.'...
     'You will be doing the same thing as what you did in the first part.'...
     'There will be 26 blocks. At the end of each block, you will watch a'...
@@ -101,19 +211,6 @@ Screen('Flip',win);
 oldtype = ShowCursor(0);
 KbWait([],2);
 
-
-baselineTN = 0 %%CHANGE LATER!!
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%% STIMULUS PRESENTATION FOR CANONICAL AND REVERSE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Step Five: Play the canonical and reverse blocks with the MMN block at the
-%end
 blockNumber = 2; %%change the block number, which should always be even
 trialNumber = 2;
 trig_len = 441; %10ms of trigger length
@@ -271,16 +368,16 @@ for i=1:blockNumber %%change the block number
     %%%number
     %%Now counterbalance the standard/deviant stimuli
     if (mod(i, 2) ~= 0) %%load different
-        BPCWmaster_test = load('BPmaster_test_v1.mat'); %%load version 1
+        load('BPmaster_test_v1.mat'); %%load version 1
         %%the block number is odd
     else
-        BPCWmaster_test = load('BPmaster_test_v2.mat');%%%load version 2 when 
+        load('BPmaster_test_v2.mat');%%%load version 2 when 
         %%the block number is even 
     end
     %%use v and last to index the stimulus positions in a sequence
     v = [1,1,1,2];
     last = [1,1,2];
-    standard = BPCWmaster_test.BPCWmaster_test.Stimuli{1,8}; %%standard stimulus is alwas
+    standard = BPCWmaster_test.Stimuli{1,8}; %%standard stimulus is alwas
     %%the first one in the file
     
     %%start 'building' our speech sequence and store in vector 'build'
@@ -311,8 +408,8 @@ for i=1:blockNumber %%change the block number
         %%%%THE TRIGGER NUMBER BELOW IS A LITTLE TRICKY
         %%%%THINK OF A GOOD WAY TO DEAL WITH THIS
         elseif (mod(b, 2) == 0) && (b<6) %% randomize standard+deviant blocks in <6 even numbers
-            s1 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos(1),8}; s2 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos(2),8};
-            s3 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos(3),8}; s4 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos(4),8};
+            s1 = BPCWmaster_test.Stimuli{pos(1),8}; s2 = BPCWmaster_test.Stimuli{pos(2),8};
+            s3 = BPCWmaster_test.Stimuli{pos(3),8}; s4 = BPCWmaster_test.Stimuli{pos(4),8};
             
             %%%EEG trigger for standard is always 51
             %%%and for deviant is always 52
@@ -349,9 +446,9 @@ for i=1:blockNumber %%change the block number
          
 
         elseif (b==6) %%randomize the last block
-            s1 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos_end(1),8};
-            s2 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos_end(2),8};
-            s3 = BPCWmaster_test.BPCWmaster_test.Stimuli{pos_end(3),8};
+            s1 = BPCWmaster_test.Stimuli{pos_end(1),8};
+            s2 = BPCWmaster_test.Stimuli{pos_end(2),8};
+            s3 = BPCWmaster_test.Stimuli{pos_end(3),8};
             
             Block = [zeros(ISI,1); s1;...
                      zeros(ISI,1); s2;...
