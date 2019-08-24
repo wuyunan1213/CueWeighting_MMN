@@ -18,7 +18,9 @@
 %%different triggers on the different test stimuli
 %%2.Sometimes the last sound in the MMN gets cut off.
 %%3.Scale volumn of the sound down a little bit
-
+%%4.Add more movies in the folder
+%%5.Change the block and trial numbers
+%%6.change the instructions about the movie so they won't move as much
 %% INITIALIZATION
 close all;
 clear all; %#ok<CLALL>
@@ -35,6 +37,8 @@ blockNumber = 2;%%change the block number in the actual experiment,
                 
 trialNumber = 36;%%Number of trials within a block, should always be 36
                  %%%for this experiment
+scale=db2mag(-10);%%scale the sound down to a certain degree so it's at a 
+                  %%comfortable listening level using earphones
 
 % Step One: Connect to and properly initialize RME sound card
 fprintf('Initializing connection to sound card...\n')
@@ -64,7 +68,6 @@ load('BPmaster_baseline.mat');
 load('BPmaster_canonical.mat');
 load('BPmaster_reverse.mat');
 load('BPresp.mat');
-scale=db2mag(-10);
 fprintf('Done.\n')
 %%column names of the stimfiles: 
 %%1.sound file 2. VOT value 3. F0 value 4. VOT level 5. F0 level. 6. block
@@ -100,18 +103,19 @@ responseKeyIdx = KbName('space');
 enabledkeys = RestrictKeysForKbCheck(responseKeyIdx);
 
 %% STIMULUS PRESENTATION FOR BASELINE BLOCKS DURING EEG CAPING
-curText = ['<color=ffffff>In this experiment, you will hear either the word'...
-    '<color=ffff00><b>"Beer"<b> <color=ffffff>or the word <color=ffff00><b>"Pier.'...
+curText = ['<color=ffffff>In this experiment, you will hear either the word '...
+    '<color=ffff00><b>"Beer"<b> <color=ffffff>or the word <color=ffff00><b>"Pier'...
     '"<b> <color=ffffff>\n\n'...
-    'If you hear "beer," click the box labelled "beer."\nIf you hear "pier,"'...
-    'click the box labelled "pier."\n\nIf you are unsure, '...
+    'If you hear "beer" click the box labeled "beer"'...
+    '\nIf you hear "pier", click the box labeled "pier".'...
+    '\n\nIf you are unsure, '...
     'make your best guess.\n\n'...
-    'This is the first part of the experiment while the experimenter'...
-    'is putting electrodes on your head'...
-    'There is only one block in this part'...
+    'This is the first part of the experiment while the experimenter '...
+    'is setting up the EEG equipment on your scalp. \n'...
+    'There is only one block in this part \n\n'...
     '<b>Press "spacebar" to begin.<b>'];
 %curText = 'In this experiment, you will hear either the word "BEER" or the word "PIER" \n\n\n\n If you hear "BEER", click the box labelled "BEER". \n\n If you hear "PIER" click the box labelled "PIER". \n\n If you are unsure, make your best guess.\n\n\n\n Every once in a while, you can take a break \n\n and we will show you a short cartoon with the same sounds in the background. \n\n You just need to watch the cartoon and relax and ignore the sounds. \n\n\n\n Press SPACEBAR to begin';
-DrawFormattedText2(curText,'win',win,'sx',100,'sy',400,'xalign','left','yalign','top','wrapat',59);
+DrawFormattedText2(curText,'win',win,'sx',400,'sy',400,'xalign','left','yalign','top','wrapat',59);
 %DrawFormattedText(win, curText, 'center', 'center', white);
 Screen('Flip',win);
 oldtype = ShowCursor(0);
@@ -208,13 +212,12 @@ stimchanList=[1,2,14];%%%change the stimulus channels to
 %Step Five: Play the canonical and reverse blocks with the MMN block at the
 %end
 
-curText = ['<color=ffffff>Now we are ready to start the second part.'...
-    'You will be doing the same thing as what you did in the first part.'...
-    'There will be 26 blocks. At the end of each block, you will watch a'...
-    'short video to take a break.\n\n You will hear the same sounds'...
-    'embedded in the videos but you don ignore the sounds embedded'...
-    'in the video\n\n<b>Press "spacebar" to begin.<b>'];
-DrawFormattedText2(curText,'win',win,'sx',100,'sy',400,'xalign','left','yalign','top','wrapat',59);
+curText = ['<color=ffffff>Now we are ready to start the second part.\n'...
+    'You will be doing the same thing in this part.\n\n'...
+    'There will be 52 blocks. At the end of each block, you will watch a short video.\n'...
+    'The video will have some embedded speech sounds. You can ignore those sounds and focus on the video.\n\n'...
+    '\n<b>Please wait until the experimenter is ready.<b>'];
+DrawFormattedText2(curText,'win',win,'sx',400,'sy',400,'xalign','left','yalign','top','wrapat',59);
 %DrawFormattedText(win, curText, 'center', 'center', white);
 Screen('Flip',win);
 oldtype = ShowCursor(0);
@@ -231,7 +234,11 @@ for i=1:blockNumber
 end
 
 for i=1:blockNumber %%change the block number
-    curText = [sprintf('Beginning block %d of %d.',i,blockNumber) '\n\nPress "spacebar" to continue.'];
+    curText = [sprintf('Beginning block %d of %d.',i,blockNumber)...
+        '\nNow you can take a break and stretch a little. '...
+        'But Please try to minimize your movement during the block,'...
+        'especially during the movie'...
+        '\n\nPress "spacebar" to continue.'];
     DrawFormattedText(win,curText,'center','center',[255 255 255]);
     Screen('Flip',win);
     KbWait([],2);
@@ -544,7 +551,7 @@ end
 % Close PTB Screen
 Screen('CloseAll');
 
-% Save subject response file. As of 01.14.2019, the data saves as BOTH a
+% Save subject response file. The data saves as BOTH a
 % *.mat and *.csv file for extra security. Also, there's a if/else
 % statement that will warn the experimenter if an issue with the *.csv save
 % process occurs, lest it tells you everything saved properly.
@@ -563,4 +570,4 @@ writetable(BPCWresp,fnamecsv);
 fprintf('Disconnecting PsychPortAudio...\n')
 playrec('reset');
 %PsychPortAudio('Close')
-fprintf('PsychPortAudio successfully disconnected. Goodbye!\n')
+fprintf('Playrec successfully disconnected. Goodbye!\n')
