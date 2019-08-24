@@ -13,11 +13,12 @@
 %    Last Edit 08/16/2019
 %
 
-%%to do:
-%%1.get the modified stim for the full 7*7 grid
-%%2.change the test stimuli to be F0 test stim instead of VOT
-%%3.create two versions of the test stimuli
-%%4.change the baselineTN numnber
+%%%3 problems with the script so far:
+%%1. Test stim in the can/rev blocks don't have triggers--ideally put
+%%different triggers on the different test stimuli
+%%2.Sometimes the last sound in the MMN gets cut off.
+%%3.Scale volumn of the sound down a little bit
+
 %% INITIALIZATION
 close all;
 clear all; %#ok<CLALL>
@@ -26,6 +27,14 @@ clc;
 cd('C:\Users\Lab User\Desktop\Experiments\Charles\EEG')
 
 fprintf('Beginning BP behavioral pilot protocol.\n\n')
+
+repNumber = 1; %%the baseline block should be repeated 4 times
+blockNumber = 2;%%change the block number in the actual experiment, 
+                %%which is the canonical/reverse part. The number should 
+                %%always be even
+                
+trialNumber = 36;%%Number of trials within a block, should always be 36
+                 %%%for this experiment
 
 % Step One: Connect to and properly initialize RME sound card
 fprintf('Initializing connection to sound card...\n')
@@ -55,6 +64,7 @@ load('BPmaster_baseline.mat');
 load('BPmaster_canonical.mat');
 load('BPmaster_reverse.mat');
 load('BPresp.mat');
+scale=db2mag(-10);
 fprintf('Done.\n')
 %%column names of the stimfiles: 
 %%1.sound file 2. VOT value 3. F0 value 4. VOT level 5. F0 level. 6. block
@@ -107,7 +117,6 @@ Screen('Flip',win);
 oldtype = ShowCursor(0);
 KbWait([],2);
 
-repNumber = 1; %%the baseline block should be repeated 4 times
 baselineTN = 25*repNumber;
 
 presentation = [];
@@ -137,7 +146,7 @@ for j=1:baselineTN %change the trial number
 
     BPCWresp(j,1:7)=BPCWmaster_baseline.Stimuli(presentation(j),1:7);
 
-    signaltwo=[signal,signal];
+    signaltwo=[scale*signal,scale*signal];
 
     pageno = playrec('play',signaltwo,stimchanList);
     playrec('block',pageno);
@@ -211,8 +220,6 @@ Screen('Flip',win);
 oldtype = ShowCursor(0);
 KbWait([],2);
 
-blockNumber = 2; %%change the block number, which should always be even
-trialNumber = 2;
 trig_len = 441; %10ms of trigger length
 
 presentation = [];
@@ -241,20 +248,19 @@ for i=1:blockNumber %%change the block number
         DrawFormattedText(win,curText,'center','center',[0 0 0]);
         Screen('Flip',win);
         
-        %%%%CHANGE THIS WHOLE CHUNK BASED ON THE NEW STIMULI SHEET
         %Play sound...include noise or not
         repIndex = baselineTN+(i-1)*trialNumber+j;
         if i <= blockNumber/2 %%present the canonical blocks first
             stim=BPCWmaster_can.Stimuli(presentation(i,j),1:8);
             %%%canonical exposure category 'b':111
             %%%canonical exposure category 'p':112
-            %%%canonical test1: 121
-            %%%canonical test2: 122
+            %%%canonical test1(low F0): 121
+            %%%canonical test2(high F0): 122
             
             %%%reverse exposure category 'b':211
             %%%reverse exposure category 'p':212
-            %%%reverse test1: 221
-            %%%reverse test2: 222
+            %%%reverse test1(low F0): 221
+            %%%reverse test2(high f0): 222
             %%%separate the 4 different trigger conditions:
             trig = zeros(length(stim{8}),1);
             if (strcmp(stim{7}, 'exposure') && stim{2} < 15)
@@ -265,11 +271,11 @@ for i=1:blockNumber %%change the block number
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(112)*ones(trig_len,1);
             
-            elseif (strcmp(stim{7}, 'test') && stim{2} < 15)
+            elseif (strcmp(stim{7}, 'test') && stim{3} < 260)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(121)*ones(trig_len,1);
             
-            elseif (strcmp(stim{7}, 'test') && stim{2} > 15)
+            elseif (strcmp(stim{7}, 'test') && stim{3} > 260)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(122)*ones(trig_len,1);
             end
@@ -288,11 +294,11 @@ for i=1:blockNumber %%change the block number
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(212)*ones(trig_len,1);
             
-            elseif (strcmp(stim{7}, 'test')  && stim{2} < 15)
+            elseif (strcmp(stim{7}, 'test')  && stim{3} < 260)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(221)*ones(trig_len,1);
             
-            elseif (strcmp(stim{7}, 'test') && stim{2} > 15)
+            elseif (strcmp(stim{7}, 'test') && stim{3} > 260)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(222)*ones(trig_len,1);
             end
@@ -302,7 +308,7 @@ for i=1:blockNumber %%change the block number
         end
        
         %%%concatenate all 3 channels of signals
-        signalthree=[stim{8},stim{8},trig];
+        signalthree=[scale*stim{8},scale*stim{8},trig];
         
         pageno = playrec('play',signalthree,stimchanList);
         playrec('block',pageno);
@@ -495,7 +501,7 @@ for i=1:blockNumber %%change the block number
     Screen('PlayMovie', movie, 1);
     rect1=SetRect(400,100,1600,1100);
 
-    signalthree=[signal,signal, trigger_MMN];
+    signalthree=[scale*signal,scale*signal,trigger_MMN];
     
     pageno = playrec('play',signalthree,stimchanList);
     
@@ -523,7 +529,8 @@ for i=1:blockNumber %%change the block number
         Screen('Close', tex);
     end
 
-    playrec('delPage',pageno);
+    while playrec('isFinished',pageno) == 0
+    end
     %PsychPortAudio('Stop', pamaster , 1, 1);
 
 
