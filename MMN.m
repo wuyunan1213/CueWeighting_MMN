@@ -13,14 +13,11 @@
 %    Last Edit 08/16/2019
 %
 
-%%%3 problems with the script so far:
-%%1. Test stim in the can/rev blocks don't have triggers--ideally put
-%%different triggers on the different test stimuli
-%%2.Sometimes the last sound in the MMN gets cut off.
-%%3.Scale volumn of the sound down a little bit
-%%4.Add more movies in the folder
-%%5.Change the block and trial numbers
-%%6.change the instructions about the movie so they won't move as much
+%%%Problems to fix:
+%%1.Generate a workspace. Talk to Tim about the RME workspace
+%%2.Change the MMN triggers?
+%%3.Change the block number to 52
+
 %% INITIALIZATION
 close all;
 clear all; %#ok<CLALL>
@@ -30,14 +27,14 @@ cd('C:\Users\Lab User\Desktop\Experiments\Charles\EEG')
 
 fprintf('Beginning BP behavioral pilot protocol.\n\n')
 
-repNumber = 1; %%the baseline block should be repeated 4 times
-blockNumber = 2;%%change the block number in the actual experiment, 
+repNumber = 4; %%the baseline block should be repeated 4 times
+blockNumber = 52;%%change the block n    umber in the actual experiment, 
                 %%which is the canonical/reverse part. The number should 
                 %%always be even
                 
 trialNumber = 36;%%Number of trials within a block, should always be 36
                  %%%for this experiment
-scale=db2mag(-10);%%scale the sound down to a certain degree so it's at a 
+scale=db2mag(-25);%%scale the sound down to a certain degree so it's at a 
                   %%comfortable listening level using earphones
 
 % Step One: Connect to and properly initialize RME sound card
@@ -134,7 +131,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BASELINE BLOCKS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for j=1:baselineTN %change the trial number
     %Flip Screen to be Beer Pier blocks
     [scrX,scrY] = RectCenter(winRect);
@@ -235,9 +232,9 @@ end
 
 for i=1:blockNumber %%change the block number
     curText = [sprintf('Beginning block %d of %d.',i,blockNumber)...
-        '\nNow you can take a break and stretch a little. '...
+        '\nNow you can take a break and stretch a little. \n'...
         'But Please try to minimize your movement during the block,'...
-        'especially during the movie'...
+        'especially during the movie\n'...
         '\n\nPress "spacebar" to continue.'];
     DrawFormattedText(win,curText,'center','center',[255 255 255]);
     Screen('Flip',win);
@@ -270,6 +267,7 @@ for i=1:blockNumber %%change the block number
             %%%reverse test2(high f0): 222
             %%%separate the 4 different trigger conditions:
             trig = zeros(length(stim{8}),1);
+            BI = -10;
             if (strcmp(stim{7}, 'exposure') && stim{2} < 15)
                 trig(find(stim{8}>.005,1):(find(stim{8}>.005,1)+trig_len-1))...
                 = trignum2scalar(111)*ones(trig_len,1);
@@ -290,6 +288,7 @@ for i=1:blockNumber %%change the block number
             BPCWresp(repIndex,1:7)=stim(1:7);%%%fill the stim info
             
         else %%%%then the reverse blocks
+            BI = 10;
             stim=BPCWmaster_rev.Stimuli(presentation(i,j),1:8);
             trig = zeros(length(stim{8}),1);
             %%4 different trigger conditions
@@ -399,6 +398,7 @@ for i=1:blockNumber %%change the block number
     %%hence, b = 1:6
     build = [];
     trigger_build = [];
+    MMNtrig = 50+BI;
     for b = 1:6
         pos = v(randperm(numel(v)));
         pos_end = last(randperm(numel(last)));     
@@ -410,25 +410,24 @@ for i=1:blockNumber %%change the block number
             Block = [zeros(ISI,1);standard;...
                      zeros(ISI,1);standard;...
                      zeros(ISI,1);standard];
-            %%%EEG trigger for standard: 51
+            %%%EEG trigger for standard: 41 or 61
             trig = zeros(length(standard),1);
             trig(find(standard>.005,1):(find(standard>.005,1)+trig_len-1))...
-            = trignum2scalar(51)*ones(trig_len,1);
+            = trignum2scalar(MMNtrig+1)*ones(trig_len,1);
         
             trig_Block = [zeros(ISI,1);trig;...
             zeros(ISI,1);trig;...
             zeros(ISI,1);trig];
-        %%%%THE TRIGGER NUMBER BELOW IS A LITTLE TRICKY
-        %%%%THINK OF A GOOD WAY TO DEAL WITH THIS
+
         elseif (mod(b, 2) == 0) && (b<6) %% randomize standard+deviant blocks in <6 even numbers
             s1 = BPCWmaster_test.Stimuli{pos(1),8}; s2 = BPCWmaster_test.Stimuli{pos(2),8};
             s3 = BPCWmaster_test.Stimuli{pos(3),8}; s4 = BPCWmaster_test.Stimuli{pos(4),8};
             
-            %%%EEG trigger for standard is always 51
-            %%%and for deviant is always 52
+            %%%EEG trigger for standard is always 41 or 61
+            %%%and for deviant is always 42 or 62
             %%%but because we are randomizing here so we don't know which
             %%%is which so we need t1:t4 to index it.
-            t1 = 50+pos(1); t2 = 50+pos(2); t3 = 50+pos(3); t4 = 50+pos(4);
+            t1 = MMNtrig+pos(1); t2 = MMNtrig+pos(2); t3 = MMNtrig+pos(3); t4 = MMNtrig+pos(4);
             fprintf('\nThe trigger numbers are \n t1=%.1f\nt2=%.1f\nt3=%.1f\nt4=%.1f\n',...
                     t1, t2, t3, t4);
             Block = [zeros(ISI,1); s1;...
@@ -467,7 +466,7 @@ for i=1:blockNumber %%change the block number
                      zeros(ISI,1); s2;...
                      zeros(ISI,1); s3];
                  
-            t1 = 50+pos_end(1); t2 = 50+pos_end(2); t3 = 50+pos_end(3);
+            t1 = MMNtrig+pos_end(1); t2 = MMNtrig+pos_end(2); t3 = MMNtrig+pos_end(3);
                  
             trig1 = zeros(length(s1),1);
             trig1(find(s1>.005,1):find(s1>.005,1)+trig_len-1)...
