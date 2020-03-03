@@ -1,4 +1,4 @@
-%BeerPier cueweighting MMN script
+                                                         %BeerPier cueweighting MMN script
 %
 %   FILE NAME       : Beer vs Pier VOT and F0 test
 %   DESCRIPTION     : This is a
@@ -15,7 +15,7 @@
 
 %%%Problems to fix:
 %%1.Generate a workspace. Talk to Tim about the RME workspace
-%%2.Change the MMN triggers?
+%%2.Change the MMN triggers?    
 %%3.Change the block number to 52
 
 %% INITIALIZATION
@@ -82,6 +82,7 @@ Screen('Preference', 'TextAntiAliasing', 2);
 Screen('Preference', 'TextRenderer', 1);
 Screen('Preference','SyncTestSettings', 0.002);
 %%auditory
+%debugRect = [80, 80, 850, 850];
 [win,winRect] = Screen('OpenWindow',screenNumber,black);
 [width,height] = Screen('WindowSize',screenNumber);
 Screen('TextFont', win, 'Helvetica');
@@ -103,7 +104,7 @@ enabledkeys = RestrictKeysForKbCheck(responseKeyIdx);
 curText = ['<color=ffffff>In this experiment, you will hear either the word '...
     '<color=ffff00><b>"Beer"<b> <color=ffffff>or the word <color=ffff00><b>"Pier'...
     '"<b> <color=ffffff>\n\n'...
-    'If you hear "beer" click the box labeled "beer"'...
+    'If you hear "beer" click the box la b  beled "beer"'...
     '\nIf you hear "pier", click the box labeled "pier".'...
     '\n\nIf you are unsure, '...
     'make your best guess.\n\n'...
@@ -125,79 +126,78 @@ for i = 1:repNumber
     A = randperm(25);
     presentation=[presentation, A];
 end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BASELINE BLOCKS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% BASELINE BLOCKS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for j=1:baselineTN %change the trial number
-    %Flip Screen to be Beer Pier blocks
-    [scrX,scrY] = RectCenter(winRect);
-    rect1 = CenterRectOnPoint([0 0 500 500],scrX-325,scrY);
-    rect2 = CenterRectOnPoint([0 0 500 500],scrX+325,scrY);   
-    Screen('FillRect', win, [135 206 250], rect1);
-    Screen('FillRect', win, [135 206 250], rect2);
-    curText='Beer                                                     Pier';
-    DrawFormattedText(win,curText,'center','center',[0 0 0]);
-    Screen('Flip',win);
-
-    signal=BPCWmaster_baseline.Stimuli{presentation(j),8};
-
-    BPCWresp(j,1:7)=BPCWmaster_baseline.Stimuli(presentation(j),1:7);
-
-    signaltwo=[scale*signal,scale*signal];
-
-    pageno = playrec('play',signaltwo,stimchanList);
-    playrec('block',pageno);
-    %PsychPortAudio('FillBuffer', pamaster, signaltwo);
-    %t1 = PsychPortAudio('Start', pamaster, 1, 0, 1);
-    %PsychPortAudio('Stop', pamaster , 1, 1);
-
-    %get user response
-    [clicks,x,y,whichButton]=GetClicks(win,0);
-    while ~((((x>=scrX-575)&&(x<=scrX-75))&&((y>=scrY-250)&&(y<=scrY+250)))||(((x>=scrX+75)&&(x<=scrX+575))&&((y>=scrY-250)&&(y<=scrY+250))))
-        [clicks,x,y,whichButton]=GetClicks(win,0);
-    end
-    %record user response (in correct location)
-    if (((x>=scrX-575)&&(x<=scrX-75))&&((y>=scrY-250)&&(y<=scrY+250))) %clicked "beer"
-        BPCWresp{j,8}='beer'; 
-        %LOOK LATER
-
-        %Flip Screen to be Beer Pier blocks
-        [scrX,scrY] = RectCenter(winRect);
-        rect1 = CenterRectOnPoint([0 0 500 500],scrX-325,scrY);
-        rect2 = CenterRectOnPoint([0 0 500 500],scrX+325,scrY);
-        Screen('FillRect', win, [255 255 204], rect1);
-        Screen('FillRect', win, [135 206 250], rect2);
-        curText='Beer                                                     Pier';
-        DrawFormattedText(win,curText,'center','center',[0 0 0]);
-        Screen('Flip',win);
-
-        WaitSecs(1);
-
-    else %clicked "pier"
-        BPCWresp{j,8}='pier';
-        %LOOK LATER
-
-        %Flip Screen to be Beer Pier blocks
-        [scrX,scrY] = RectCenter(winRect);
-        rect1 = CenterRectOnPoint([0 0 500 500],scrX-325,scrY);
-        rect2 = CenterRectOnPoint([0 0 500 500],scrX+325,scrY);
-        Screen('FillRect', win, [135 206 250], rect1);
-        Screen('FillRect', win, [255 255 204], rect2);
-        curText='Beer                                                     Pier';
-        DrawFormattedText(win,curText,'center','center',[0 0 0]);
-        Screen('Flip',win);
-
-        WaitSecs(1);
-    end
-end
-
+% for j=1:baselineTN %change the trial number
+%     %Flip Screen to be Beer Pier blocks
+%     [scrX,scrY] = RectCenter(winRect);
+%     rect1 = CenterRectOnPoint([0 0 500 500],scrX-325,scrY);
+%     rect2 = CenterRectOnPoint([0 0 500 500],scrX+325,scrY);   
+%     Screen('FillRect', win, [135 206 250], rect1);
+%     Screen('FillRect', win, [135 206 250], rect2);
+%     curText='Beer                                                     Pier';
+%     DrawFormattedText(win,curText,'center','center',[0 0 0]);
+%     Screen('Flip',win);
+% 
+%     signal=BPCWmaster_baseline.Stimuli{presentation(j),8};
+% 
+%     BPCWresp(j,1:7)=BPCWmaster_baseline.Stimuli(presentation(j),1:7);
+% 
+%     signaltwo=[scale*signal,scale*signal];
+% 
+%     pageno = playrec('play',signaltwo,stimchanList);
+%     playrec('block',pageno);
+%     %PsychPortAudio('FillBuffer', pamaster, signaltwo);
+%     %t1 = PsychPortAudio('Start', pamaster, 1, 0, 1);
+%     %PsychPortAudio('Stop', pamaster , 1, 1);
+% 
+%     %get user response
+%     [clicks,x,y,whichButton]=GetClicks(win,0);
+%     while ~((((x>=scrX-575)&&(x<=scrX-75))&&((y>=scrY-250)&&(y<=scrY+250)))||(((x>=scrX+75)&&(x<=scrX+575))&&((y>=scrY-250)&&(y<=scrY+250))))
+%         [clicks,x,y,whichButton]=GetClicks(win,0);
+%     end
+%     %record user response (in correct location)
+%     if (((x>=scrX-575)&&(x<=scrX-75))&&((y>=scrY-250)&&(y<=scrY+250))) %clicked "beer"
+%         BPCWresp{j,8}='beer'; 
+%         %LOOK LATER
+% 
+%         %Flip Screen to be Beer Pier blocks
+%         [scrX,scrY] = RectCenter(winRect);
+%         rect1 = CenterRectOnPoint([0 0 500 500],scrX-325,scrY);
+%         rect2 = CenterRectOnPoint([0 0 500 500],scrX+325,scrY);
+%         Screen('FillRect', win, [255 255 204], rect1);
+%         Screen('FillRect', win, [135 206 250], rect2);
+%         curText='Beer                                                     Pier';
+%         DrawFormattedText(win,curText,'center','center',[0 0 0]);
+%         Screen('Flip',win);
+% 
+%         WaitSecs(1);
+% 
+%     else %clicked "pier"
+%         BPCWresp{j,8}='pier';
+%         %LOOK LATER
+% 
+%         %Flip Screen to be Beer Pier blocks
+%         [scrX,scrY] = RectCenter(winRect);
+%         rect1 = CenterRectOnPoint([0 0 500 500],scrX-325,scrY);
+%         rect2 = CenterRectOnPoint([0 0 500 500],scrX+325,scrY);
+%         Screen('FillRect', win, [135 206 250], rect1);
+%         Screen('FillRect', win, [255 255 204], rect2);
+%         curText='Beer                                                     Pier';
+%         DrawFormattedText(win,curText,'center','center',[0 0 0]);
+%         Screen('Flip',win);
+% 
+%         WaitSecs(1);
+%     end
+% end
 
 stimchanList=[1,2,14];%%%change the stimulus channels to 
-%%3 because we are adding an EEG trigger channnel here
+%3 because we are adding an EEG trigger channnel here
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -207,6 +207,7 @@ stimchanList=[1,2,14];%%%change the stimulus channels to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Step Five: Play the canonical and reverse blocks with the MMN block at the
+%%Update 3/3/2020: change the order to reverse-canonical
 %end
 
 curText = ['<color=ffffff>Now we are ready to start the second part.\n'...
@@ -254,7 +255,8 @@ for i=1:blockNumber %%change the block number
         
         %Play sound...include noise or not
         repIndex = baselineTN+(i-1)*trialNumber+j;
-        if i <= blockNumber/2 %%present the canonical blocks first
+        if i >= blockNumber/2 %%present the canonical blocks first. Updated 3/3/20: reverse first
+            %%if i <= blockNumber/2
             stim=BPCWmaster_can.Stimuli(presentation(i,j),1:8);
             %%%canonical exposure category 'b':111
             %%%canonical exposure category 'p':112
